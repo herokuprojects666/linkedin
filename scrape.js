@@ -6,8 +6,8 @@ var casper = require('casper').create({
 	}});
 
 var currentPath = fs.absolute(currentFile).split('/')
-.filter(function(path, index, array) { return index < array.length - 1})
-.join('/') + '/';
+	.filter(function(path, index, array) { return index < array.length - 1})
+	.join('/') + '/';
 
 var maxContactCount = 5;
 
@@ -27,7 +27,7 @@ if (!password) {
 	throw new Error('Missing required argument: pw')
 }
 if (contactCount) {
-	count = contactCount
+	maxContactCount = contactCount
 }
 
 /** @todo: account for captcha */
