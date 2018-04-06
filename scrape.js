@@ -1,4 +1,5 @@
 var fs = require('fs');
+var _ = require('underscore.js')
 var currentFile = require('system').args[3];
 var casper = require('casper').create({
     viewportSize: {
@@ -92,10 +93,37 @@ casper.start("https://www.linkedin.com/uas/login", function() {
     myScrollTo.call(this, 3300)
   })
 
+  /** @todo: add logic to echo out contacts that you already have that show up in the search */
   this.then(function() {
-    // require('utils').dump(this.getElementsInfo('.search-result__occluded-item'))
-    this.each(this.getElementsInfo('.search-result__occluded-item'), function(casper, element, index) {
-      console.log('html is ', element['html'])
+    var skippedIndexes = []
+    var selectorLength = this.evaluate(function() {
+      return document.querySelectorAll('.search-result__actions button').length
+    })
+    this.each(this.getElementsInfo('.search-result__actions button'), function (casper, element, index) {
+      var skippedContactLabel = element.attributes['aria-label']
+      var name = skippedContactLabel.replace(/(invite)\s+(sent)\s+(to)\s+/i, '')
+      if (name != skippedContactLabel) {
+        skippedIndexes.push(index)
+        console.log('Skipping the following contact: ' + name + 'for the following reason: invite already sent')
+      }
+    })
+    /** @todo: conver this short block into a recursive function that keeps going until no more pages or we reach the amount of specified contacts */
+    var allIndexes = _.range(0, selectorLength)
+    var clickableIndexes = _.filter(allIndexes, function(element) {
+      return !_.contains(skippedIndexes, element)
+    })
+
+    var i = 0
+    this.eachThen(allIndexes, function() {
+      if (_.includes(clickableIndexes, i)) {
+        this.click('.results-list li:nth-child(' + (+i + 1) + ') .search-result__actions button')
+        this.then(function() {
+          this.click('.button-primary-large.ml1')
+        })
+        /** @todo: convert this into a waitFor instead */
+        this.wait(2000)
+      }
+      i++
     })
   })
 })
