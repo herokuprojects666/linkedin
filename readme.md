@@ -14,5 +14,5 @@ Finally, in order to run the script you will need to execute it in node. The bit
 alias dev="node path/to/script -c 300 -u \"my_url\" -s \"cookie_session\""
 
 `-c` is an optional parameter. It dicates how many contacts you want to add. It defaults to 50 if ommitted. It can also be passed through on `-count` flag. <br/>
-`-u` is a required parameter. This is the beginning url that you want to scrape on. Example url: `https://www.linkedin.com/search/results/people/?facetGeoRegion=%5B%22us%3A34%22%5D&keywords=software%20manager&origin=FACETED_SEARCH&page=1. This can also be passed through on `-url` flag.
+`-u` is a required parameter. This is the beginning url that you want to scrape on. Example url: `https://www.linkedin.com/search/results/people/?facetGeoRegion=%5B%22us%3A34%22%5D&keywords=software%20manager&origin=FACETED_SEARCH&page=1. This can also be passed through on `-url` flag. <br/>
 `-s` is a required paramter. This is the session cookie LinkedIn uses to determine if you're logged in. This can be found in dev tools by looking at the cookies and copy/pasting the value in `li_at` key.
