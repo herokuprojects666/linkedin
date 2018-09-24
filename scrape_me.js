@@ -41,7 +41,7 @@ if (parsedArgs.session) {
 }
 
 function getIndexes(arg, cb) {
-  var filteredElements = $('.results-list li').filter(function(element) {
+  var filteredElements = $('.search-results__list  li').filter(function(element) {
     return $(this).find(arg.selector).length
   })
   var indexes = $(filteredElements).map(function(element) {
@@ -57,7 +57,7 @@ function getNames(indexes, cb) {
 	if (!test.length) {
 		return cb(null, [])
 	}
-  var filteredElements = $('.results-list li').filter(function(element) {
+  var filteredElements = $('.search-results__list  li').filter(function(element) {
     return indexes.includes($(this).index())
   })
   var names = $(filteredElements).map(function(element) {
@@ -69,20 +69,21 @@ function getNames(indexes, cb) {
 /** Separates all the users on the page into disabled, enabled, and in-mail (premium) categories */
 async function findElements(tab, count=10) {
 	try {
-		await tab.waitUntilPresent('.results-list li')
+		await tab.waitUntilPresent('.search-results__list  li')
 	}
 	catch (e) {
 		count--
 		/** Linkedin fails to load at random so if that happens try to reload the page. After 10 reloads we are essentially in an unrecoverable state so exit at that point. */
 		if (count && currentUrl) {
-			console.log('Failed to find elements. Attempting page reload.')
 			await tab.open(currentUrl)
 			return recursivePromise(tab)
 		}
-		else {
-			console.log('Page failed to load after 10 * max timeouts. Exiting.')
-			return nick.exit()
+		if (count && !currentUrl) {
+			await tab.open(url)
+			return recursivePromise(tab)
 		}
+		console.log('Page failed to load after 10 * max timeouts. Exiting.')
+		return nick.exit()
 	}
 
 	/** needed in order to trigger the content to show. All the content is hidden away in Ember virtual dom until its scrolled into view */
@@ -95,7 +96,7 @@ async function findElements(tab, count=10) {
 	await tab.scroll(0, 3500)
 	await tab.scroll(0, 4000)
 	const selectorLength = await tab.evaluate(function(arg, cb) {
-		const length = document.querySelectorAll('.results-list li').length
+		const length = document.querySelectorAll('.search-results__list li.search-result').length
 		return cb(null, length)
 	})
   var inMailIndexes = await tab.evaluate(getIndexes, {selector: '.search-result__actions--primary a'})
@@ -133,10 +134,9 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 	}
 	if (indexes.length) {
 		var index = indexes.shift()
-		console.log('count is ', count)
 		await tab.waitUntilPresent('li.active')
-		await tab.waitUntilPresent('.results-list li:nth-child(' + (+index + 1) + ') .search-result__actions button')
-		await tab.click('.results-list li:nth-child(' + (+index + 1) + ') .search-result__actions button')
+		await tab.waitUntilPresent('.search-results__list li:nth-child(' + (+index + 1) + ') .search-result__actions button')
+		await tab.click('.search-results__list li:nth-child(' + (+index + 1) + ') .search-result__actions button')
 		try {
 			await tab.waitUntilPresent(".send-invite__header [type*='cancel-icon']", defaultTimeout)
 		}
@@ -197,6 +197,13 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 			}, {index: currentIndex})
 			}
 			currentUrl = await(tab.getUrl())
+			const page = currentUrl.match(/(page=)[0-9]+/)
+			/** Any page after 100 will never load [more than 1000 resuts]. Exit early if we hit page 101. */
+			if (page && page.length && +(page[0].replace('page=', '')) > 100) {
+				console.log('max page of 100 reached. Exiting early')
+				nick.exit()
+				return
+			}
 			console.log('new url is ', currentUrl)
 			const e = await new Promise(async function(r, rj) {
 				r(findElements(tab))
