@@ -72,6 +72,12 @@ async function findElements(tab, count=10) {
 		await tab.waitUntilPresent('.search-results__list  li')
 	}
 	catch (e) {
+		/** Check if we clicked on a page with no search results [LinkedIn bug]. If there is an error, that means that the issue is something other than no results to show. */
+		await tab.waitUntilPresent('.search-no-results__image-container', function(error) {
+			if (!error) {
+				nick.exit()
+			}
+		})
 		count--
 		/** Linkedin fails to load at random so if that happens try to reload the page. After 10 reloads we are essentially in an unrecoverable state so exit at that point. */
 		if (count && currentUrl) {
@@ -135,8 +141,8 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 	if (indexes.length) {
 		var index = indexes.shift()
 		await tab.waitUntilPresent('li.active')
-		await tab.waitUntilPresent('.search-results__list li:nth-child(' + (+index + 1) + ') .search-result__actions button')
-		await tab.click('.search-results__list li:nth-child(' + (+index + 1) + ') .search-result__actions button')
+		await tab.waitUntilPresent('.search-results__list li.search-result:nth-child(' + (+index + 1) + ') .search-result__actions button')
+		await tab.click('.search-results__list li.search-result:nth-child(' + (+index + 1) + ') .search-result__actions button')
 		try {
 			await tab.waitUntilPresent(".send-invite__header [type*='cancel-icon']", defaultTimeout)
 		}
@@ -155,6 +161,7 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 			}
 		}
 		else {
+			e++
 			try {
 				await tab.click('.button-primary-large.ml1')
 			}
@@ -170,6 +177,7 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 		}
 
 		count--
+		console.log('count is ', count)
 		recursiveUpdate.apply(null, arguments)
 	}
 	else {
