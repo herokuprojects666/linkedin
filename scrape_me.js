@@ -182,7 +182,7 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 	}
 	else {
 		const lastIndex = await tab.evaluate(function(arg, cb) {
-			const index = $('.page-list').find('li').last().index()
+			const index = $('.artdeco-pagination').find('li').last().index()
 			return cb(null, index)
 		})
 		const currentIndex = await tab.evaluate(function(arg, cb) {
@@ -191,7 +191,7 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 		})
 		if (+currentIndex < +lastIndex) {
 			await tab.evaluate(function(arg, cb) {
-				$('.page-list ol li').eq((+arg.index) + 1).find('button').click()
+				$('.artdeco-pagination ul li').eq((+arg.index) + 1).find('button').click()
 				return cb(null, null)
 			}, {index: currentIndex})
 			/** Unfortunately, this bit fails on rare occassions. Skip what should be the next page and click on the "next" next page instead */
@@ -200,7 +200,7 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 			}
 			catch (Exception) {
 				await tab.evaluate(function(arg, cb) {
-					$('.page-list ol li').eq((+arg.index) + 2).find('button').click()
+					$('.artdeco-pagination ul li').eq((+arg.index) + 2).find('button').click()
 					return cb(null, null)
 			}, {index: currentIndex})
 			}
@@ -231,9 +231,16 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 	  value: session,
 	  domain: "www.linkedin.com"
 	})
-	await tab.open(url)
+	/** This seems like something that should succeed 100% with a valid session but it doesn't. ballz. */
+	try {
+		await tab.open(url)
+	}
+	catch (e) {
+		nick.exit()
+		return
+	}
+	await recursivePromise(tab)
 
-  await recursivePromise(tab)
 })()
 .then(() => {
 	console.log("Job completed. Existing.")
