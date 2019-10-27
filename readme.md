@@ -3,9 +3,15 @@ I created this script with the assumption that all the required npm libraries wo
 2) `minimist`
 3) `underscore`
 
+This can be accomplished via installing each of these with the `-g` flag. For example, `npm install nickjs -g`.
+
 You will also want to add the following to your bash profile (or whatever the equivalent is that you're using)
 1) `export NODE_PATH=/usr/local/lib/node_modules` 
 2) `export CHROME_PATH=/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome`
+
+The following should be the equivalent on Windows 7/10. I believe these should work adding them as part of PATH variable as well:
+1) `export NODE_PATH="C:\Users\${my_username}\AppData\Roaming\npm\node_modules"`
+2) `export CHROME_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"`
 
 These are the paths where node and chrome live respectfully. The paths my vary slightly on your system.
 
