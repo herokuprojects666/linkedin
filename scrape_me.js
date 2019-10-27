@@ -68,6 +68,7 @@ function getNames(indexes, cb) {
 
 /** Separates all the users on the page into disabled, enabled, and in-mail (premium) categories */
 async function findElements(tab, count=10) {
+	await tab.inject('https://code.jquery.com/jquery-3.2.1.min.js')
 	try {
 		await tab.waitUntilPresent('.search-results__list  li')
 	}
@@ -144,33 +145,42 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 		await tab.waitUntilPresent('.search-results__list li.search-result:nth-child(' + (+index + 1) + ') .search-result__actions button')
 		await tab.click('.search-results__list li.search-result:nth-child(' + (+index + 1) + ') .search-result__actions button')
 		try {
-			await tab.waitUntilPresent(".send-invite__header [type*='cancel-icon']", defaultTimeout)
+			await tab.waitUntilPresent(".artdeco-button--3", defaultTimeout)
 		}
 		catch (Exception) {
 			e++
 		}
-		const isDisabled = await tab.evaluate(function(arg, cb) {
-			return cb(null, $('.button-primary-large.ml1').is(':disabled'))
-		})
-		if (isDisabled) {
-			try {
-				await tab.click(".send-invite__header [type*='cancel-icon']")
-			}
-			catch (Exception) {
-				e++
-			}
+		// I believe this was used previously to detect when a request had finished processing. It doesn't look like this
+		// applies anymore but leaving in anyway. Even if it does, the previous class for clickable invite button changed
+		// so it's likely this class would be wrong as well now.
+		// const isDisabled = await tab.evaluate(function(arg, cb) {
+		// 	return cb(null, $('.button-primary-large.ml1').is(':disabled'))
+		// })
+		// if (isDisabled) {
+		// 	try {
+		// 		await tab.click(".send-invite__header [type*='cancel-icon']")
+		// 	}
+		// 	catch (Exception) {
+		// 		e++
+		// 	}
+		// }
+		// else {
+		// 	e++
+		// 	try {
+		// 		await tab.click('.button-primary-large.ml1')
+		// 	}
+		// 	catch (Exception) {
+		// 		e++
+		// 	}
+		// }
+		try {
+			await tab.click('.artdeco-button--3.artdeco-button--primary')
 		}
-		else {
+		catch (Exception) {
 			e++
-			try {
-				await tab.click('.button-primary-large.ml1')
-			}
-			catch (Exception) {
-				e++
-			}
 		}
 		try {
-			await tab.waitWhilePresent(".send-invite__header [type*='cancel-icon']", defaultTimeout)
+			await tab.waitWhilePresent('.artdeco-button--3.artdeco-button--primary', defaultTimeout)
 		}
 		catch (Exception) {
 			e++
