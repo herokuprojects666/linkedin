@@ -191,6 +191,7 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 		recursiveUpdate.apply(null, arguments)
 	}
 	else {
+		await tab.inject('https://code.jquery.com/jquery-3.2.1.min.js')
 		const lastIndex = await tab.evaluate(function(arg, cb) {
 			const index = $('.artdeco-pagination').find('li').last().index()
 			return cb(null, index)
@@ -204,16 +205,7 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 				$('.artdeco-pagination ul li').eq((+arg.index) + 1).find('button').click()
 				return cb(null, null)
 			}, {index: currentIndex})
-			/** Unfortunately, this bit fails on rare occassions. Skip what should be the next page and click on the "next" next page instead */
-			try {
-				await tab.waitWhilePresent('.search-is-loading', defaultTimeout)
-			}
-			catch (Exception) {
-				await tab.evaluate(function(arg, cb) {
-					$('.artdeco-pagination ul li').eq((+arg.index) + 2).find('button').click()
-					return cb(null, null)
-			}, {index: currentIndex})
-			}
+			await tab.wait(4000);
 			currentUrl = await(tab.getUrl())
 			const page = currentUrl.match(/(page=)[0-9]+/)
 			/** Any page after 100 will never load [more than 1000 resuts]. Exit early if we hit page 101. */
