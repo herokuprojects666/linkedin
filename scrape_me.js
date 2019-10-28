@@ -2,8 +2,6 @@ const Nick = require("nickjs")
 const _ = require("underscore")
 var parseArgs = require('minimist')
 
-/** @todo: Cleanup and remove what isn't needed before adding readme */
-
 const nick = new Nick()
 const defaultCount = 50
 const defaultTimeout = 20000
@@ -67,7 +65,7 @@ function getNames(indexes, cb) {
 }
 
 /** Separates all the users on the page into disabled, enabled, and in-mail (premium) categories */
-async function findElements(tab, count=10) {
+async function findElements(tab) {
 	await tab.inject('https://code.jquery.com/jquery-3.2.1.min.js')
 	try {
 		await tab.waitUntilPresent('.search-results__list  li')
@@ -107,13 +105,9 @@ async function findElements(tab, count=10) {
 		return cb(null, length)
 	})
   var inMailIndexes = await tab.evaluate(getIndexes, {selector: '.search-result__actions--primary a'})
- //  console.log('in mail is ', inMailIndexes)
-	// var inMailNames = await tab.evaluate(getNames, inMailIndexes)
-  // console.log('in mail names are ', inMailNames)
+  // var inMailNames = await tab.evaluate(getNames, inMailIndexes)
   var disabledIndexes = await tab.evaluate(getIndexes, {selector: '.search-result__actions button:disabled'})
-  // console.log('disabled is ', disabledIndexes)
   // var disabledNames = await tab.evaluate(getNames, disabledIndexes)
-  // console.log('disableds names are ', disabledNames)
   var enabledIndexes = await tab.evaluate(getIndexes, {selector: '.search-result__actions button:enabled:not(.message-anywhere-button)'})
   // var enabledNames = await tab.evaluate(getNames, enabledIndexes)
   var iterable = _.range(selectorLength)
@@ -150,29 +144,6 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 		catch (Exception) {
 			e++
 		}
-		// I believe this was used previously to detect when a request had finished processing. It doesn't look like this
-		// applies anymore but leaving in anyway. Even if it does, the previous class for clickable invite button changed
-		// so it's likely this class would be wrong as well now.
-		// const isDisabled = await tab.evaluate(function(arg, cb) {
-		// 	return cb(null, $('.button-primary-large.ml1').is(':disabled'))
-		// })
-		// if (isDisabled) {
-		// 	try {
-		// 		await tab.click(".send-invite__header [type*='cancel-icon']")
-		// 	}
-		// 	catch (Exception) {
-		// 		e++
-		// 	}
-		// }
-		// else {
-		// 	e++
-		// 	try {
-		// 		await tab.click('.button-primary-large.ml1')
-		// 	}
-		// 	catch (Exception) {
-		// 		e++
-		// 	}
-		// }
 		try {
 			await tab.click('.artdeco-button--3.artdeco-button--primary')
 		}
@@ -185,7 +156,6 @@ async function recursiveUpdate(resolve, reject, indexes, iterable, tab) {
 		catch (Exception) {
 			e++
 		}
-
 		count--
 		console.log('count is ', count)
 		recursiveUpdate.apply(null, arguments)
